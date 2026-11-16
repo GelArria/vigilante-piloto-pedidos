@@ -11,13 +11,12 @@
     "dev": "vite",
     "build": "vite build",
     "prestart": "node scripts/migrate.js",
-    "start": "node --import vigilante server.js",
+    "start": "node server.js",
     "test": "node --test"
   },
   "dependencies": {
     "express": "5.3.0",
-    "pg": "8.23.1",
-    "vigilante": "file:./vigilante"
+    "pg": "8.23.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "6.3.0",
