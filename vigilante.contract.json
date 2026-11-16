@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "project": "pedidos",
+  "intervalMinutes": 5,
+  "productionSynthetic": false,
+  "editable": [
+    "src/pedidos/**"
+  ],
+  "minimalData": [
+    "id",
+    "cliente",
+    "total"
+  ],
+  "flows": [
+    {
+      "id": "consultar-pedido",
+      "useCase": "Consultar un pedido propio: el total en USD es la suma de precio por cantidad, sin descuentos por volumen. La respuesta debe incluir id, cliente y total en menos de 2 segundos.",
+      "steps": [
+        {
+          "method": "GET",
+          "route": "/pedidos/{id}",
+          "status": 200,
+          "maxMs": 2000,
+          "repeatable": true,
+          "synthetic": {
+            "path": "/pedidos/PRUEBA-1",
+            "headers": {
+              "x-cliente": "cliente-prueba"
+            },
+            "expect": {
+              "id": "PRUEBA-1",
+              "cliente": "cliente-prueba",
+              "total": 20
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "impedir-consulta-ajena",
+      "useCase": "Nunca mostrar el pedido de otro cliente: consultar PRUEBA-1 con un identificador de cliente distinto debe devolver 404 sin revelar el pedido.",
+      "steps": [
+        {
+          "method": "GET",
+          "route": "/pedidos/{id}",
+          "status": 404,
+          "maxMs": 2000,
+          "repeatable": true,
+          "synthetic": {
+            "path": "/pedidos/PRUEBA-1",
+            "headers": {
+              "x-cliente": "otro-cliente-prueba"
+            },
+            "expect": {}
+          }
+        }
+      ]
+    }
+  ],
+  "gaps": [
+    "Falta confirmar el identificador de cliente propietario de PRUEBA-2 para incorporar su consulta sintética. Su total esperado confirmado es 30 USD por tres unidades de 10 USD.",
+    "No se confirmó el estado ni el cuerpo esperado al consultar un pedido inexistente o sin el encabezado x-cliente.",
+    "No se confirmó el cuerpo exacto del error 404 para pedidos de otro cliente; debe verificarse que no revele datos del pedido.",
+    "Las consultas sintéticas se limitan conservadoramente a preproducción: no hay registros fijos en producción ni autorización explícita para ejecutar allí pruebas sintéticas."
+  ]
+}
