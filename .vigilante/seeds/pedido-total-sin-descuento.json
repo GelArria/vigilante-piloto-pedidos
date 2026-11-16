@@ -1,0 +1,8 @@
+{
+  "id": "PRUEBA-1",
+  "items": [
+    { "id": "PRUEBA-A", "precio": 10, "cantidad": 1 },
+    { "id": "PRUEBA-B", "precio": 10, "cantidad": 1 }
+  ],
+  "total": 20
+}
