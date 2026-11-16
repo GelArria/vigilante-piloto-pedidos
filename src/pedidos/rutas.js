@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { pool, transaction } from '../db.js';
 import { requiereCliente } from '../clientes/sesion.js';
-import { totalCents } from './total.js';
+import { totalConPromocion } from './promociones.js';
 import { validarPedido } from './validar.js';
 
 export const pedidos = Router();
@@ -23,7 +23,7 @@ async function cargar(where, params) {
     direccion: p.direccion,
     creadoEn: p.creado_en,
     items: p.items.map(i => ({ productoId: i.productoId, nombre: i.nombre, precio: i.precioCentavos / 100, cantidad: i.cantidad })),
-    total: totalCents(p.items) / 100,
+    total: totalConPromocion(p.items) / 100,
   }));
 }
 
