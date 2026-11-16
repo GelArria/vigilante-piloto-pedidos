@@ -18,4 +18,4 @@ const server = http.createServer((req, res) => {
   res.end(JSON.stringify({ id: order.id, cliente: order.cliente, total: total(order.items) }));
 });
 
-server.listen(Number(process.env.PORT ?? 3000), '127.0.0.1', () => console.log(`pedidos en ${server.address().port}`));
+server.listen(Number(process.env.PORT ?? 3000), process.env.HOST ?? '127.0.0.1', () => console.log(`pedidos en ${server.address().port}`));
