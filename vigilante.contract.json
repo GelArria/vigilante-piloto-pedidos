@@ -1,0 +1,243 @@
+{
+  "version": 1,
+  "project": "tienda",
+  "intervalMinutes": 60,
+  "productionSynthetic": false,
+  "editable": [
+    "src/pedidos/**",
+    "src/productos/**"
+  ],
+  "minimalData": [
+    "id",
+    "estado",
+    "cantidad",
+    "precio",
+    "total",
+    "status"
+  ],
+  "flows": [
+    {
+      "id": "consultar-catalogo",
+      "useCase": "Consultar catálogo público de productos activos",
+      "steps": [
+        {
+          "method": "GET",
+          "route": "/api/productos",
+          "status": 200,
+          "maxMs": 2000,
+          "repeatable": true,
+          "synthetic": {
+            "path": "/api/productos",
+            "headers": {},
+            "expect": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": "consultar-pedidos-prueba",
+      "useCase": "Consultar pedidos propios con totales confirmados",
+      "steps": [
+        {
+          "method": "GET",
+          "route": "/api/pedidos/{id}",
+          "status": 200,
+          "maxMs": 2000,
+          "repeatable": true,
+          "synthetic": {
+            "path": "/api/pedidos/PRUEBA-1",
+            "headers": {
+              "authorization": "Bearer ${VIGILANTE_SECRET_CLIENTE_PRUEBA}"
+            },
+            "expect": {
+              "id": "PRUEBA-1",
+              "total": 20
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "route": "/api/pedidos/{id}",
+          "status": 200,
+          "maxMs": 2000,
+          "repeatable": true,
+          "synthetic": {
+            "path": "/api/pedidos/PRUEBA-2",
+            "headers": {
+              "authorization": "Bearer ${VIGILANTE_SECRET_CLIENTE_PRUEBA}"
+            },
+            "expect": {
+              "id": "PRUEBA-2",
+              "total": 30
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "aislar-pedidos-ajenos",
+      "useCase": "Ocultar existencia del pedido ajeno PRUEBA-3",
+      "steps": [
+        {
+          "method": "GET",
+          "route": "/api/pedidos/{id}",
+          "status": 404,
+          "maxMs": 2000,
+          "repeatable": true,
+          "synthetic": {
+            "path": "/api/pedidos/PRUEBA-3",
+            "headers": {
+              "authorization": "Bearer ${VIGILANTE_SECRET_CLIENTE_PRUEBA}"
+            },
+            "expect": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": "rechazar-consultas-sin-sesion",
+      "useCase": "Rechazar consultas sin cookies ni autorización",
+      "steps": [
+        {
+          "method": "GET",
+          "route": "/api/sesion",
+          "status": 401,
+          "maxMs": 2000,
+          "repeatable": true,
+          "synthetic": {
+            "path": "/api/sesion",
+            "headers": {},
+            "expect": {}
+          }
+        },
+        {
+          "method": "GET",
+          "route": "/api/pedidos",
+          "status": 401,
+          "maxMs": 2000,
+          "repeatable": true,
+          "synthetic": {
+            "path": "/api/pedidos",
+            "headers": {},
+            "expect": {}
+          }
+        },
+        {
+          "method": "GET",
+          "route": "/api/pedidos/{id}",
+          "status": 401,
+          "maxMs": 2000,
+          "repeatable": true,
+          "synthetic": {
+            "path": "/api/pedidos/PRUEBA-1",
+            "headers": {},
+            "expect": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": "entrar",
+      "useCase": "Entrar con credenciales correctas o incorrectas; solo documentado",
+      "steps": [
+        {
+          "method": "POST",
+          "route": "/api/sesion",
+          "status": 200,
+          "maxMs": 2000,
+          "repeatable": false
+        },
+        {
+          "method": "POST",
+          "route": "/api/sesion",
+          "status": 401,
+          "maxMs": 2000,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "id": "salir",
+      "useCase": "Salir de sesión; solo documentado, nunca usar token de prueba",
+      "steps": [
+        {
+          "method": "DELETE",
+          "route": "/api/sesion",
+          "status": 204,
+          "maxMs": 2000,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "id": "crear-pedido",
+      "useCase": "Crear pedido o rechazar stock insuficiente y datos inválidos; solo documentado",
+      "steps": [
+        {
+          "method": "POST",
+          "route": "/api/pedidos",
+          "status": 201,
+          "maxMs": 2000,
+          "repeatable": false
+        },
+        {
+          "method": "POST",
+          "route": "/api/pedidos",
+          "status": 409,
+          "maxMs": 2000,
+          "repeatable": false
+        },
+        {
+          "method": "POST",
+          "route": "/api/pedidos",
+          "status": 400,
+          "maxMs": 2000,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "id": "cancelar-pedido",
+      "useCase": "Cancelar pendiente, rechazar repetición y ocultar ajenos o inexistentes; solo documentado",
+      "steps": [
+        {
+          "method": "POST",
+          "route": "/api/pedidos/{id}/cancelar",
+          "status": 200,
+          "maxMs": 2000,
+          "repeatable": false
+        },
+        {
+          "method": "POST",
+          "route": "/api/pedidos/{id}/cancelar",
+          "status": 409,
+          "maxMs": 2000,
+          "repeatable": false
+        },
+        {
+          "method": "POST",
+          "route": "/api/pedidos/{id}/cancelar",
+          "status": 404,
+          "maxMs": 2000,
+          "repeatable": false
+        }
+      ]
+    }
+  ],
+  "gaps": [
+    "No se confirmó latencia: maxMs=2000 es propuesta exigida por el formato, no requisito aceptado. Requiere aprobación antes de atribuir incumplimientos por tiempo.",
+    "Los 200 de consultas válidas de catálogo y pedidos proceden del código y no recibieron confirmación explícita. La repetibilidad de lecturas también se deduce del código, sin confirmación explícita.",
+    "No se confirmó el estado fijo de PRUEBA-1 ni PRUEBA-2. No comprobar estado ni orden de items. Catálogo sin precios ni stock fijos.",
+    "Reglas confirmadas pendientes de pruebas controladas: total igual a suma de precio por cantidad, sin impuestos, envío ni descuentos por volumen; crear da estado pendiente y descuenta stock. Repetir compra crea otro pedido.",
+    "Reglas confirmadas pendientes de pruebas controladas: stock insuficiente da 409 indicando unidades restantes; producto inactivo o cantidad cero da 400. Ningún rechazo crea pedido ni cambia stock. Nunca stock negativo ni pedido parcial.",
+    "Reglas confirmadas pendientes de pruebas controladas: cancelar pendiente repone exactamente sus unidades; repetir da 409 sin reponer otra vez. Ajeno o inexistente debe dar 404 también al cancelar; el 409 actual es un defecto confirmado.",
+    "No hay fixtures desechables ni autorización confirmada para automatizar compras, cancelaciones o cambios de sesión. Se documentan sin synthetic. Salir repetidamente debe dar 204; repeatable:false expresa exclusión operativa para proteger el token de prueba.",
+    "No se proporcionó identificador garantizado como inexistente para probar su 404; PRUEBA-3 cubre solo pedido ajeno.",
+    "No se confirmó automatizar GET /api/sesion con token ni el identificador esperado del cliente. Se evita esa lectura autenticada por sus datos personales.",
+    "La evidencia solo puede incluir identificadores, estados, cantidades, precios, totales y códigos de respuesta. Nunca guardar nombres, correos, direcciones, tokens, cookies ni autorización, ni cuerpos completos o errores con nombres. Falta implementar y confirmar filtrado; no se aclaró si la prohibición afecta también a respuestas al dueño.",
+    "Los fixtures se restauran en cada despliegue y solo existen en preproducción. No ejecutar sintéticos en producción. Falta concretar destino de preproducción y provisión del secreto.",
+    "Registro de cuentas excluido de comprobaciones automáticas por crear clientes. src/clientes/** nunca puede modificarse mediante hotfix.",
+    "Quedó sin respuesta documentar sin ejecución horaria entrar/salir, crear y cancelar; se mantiene la exclusión conservadora para no mutar datos ni invalidar el token.",
+    "expect no permite comprobar por sí solo catálogo exclusivamente activo, atomicidad, ausencia de stock negativo ni aislamiento completo. Requieren verificaciones adicionales."
+  ]
+}
