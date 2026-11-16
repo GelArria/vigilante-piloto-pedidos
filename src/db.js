@@ -1,9 +1,21 @@
-import { DatabaseSync } from 'node:sqlite';
+import pg from 'pg';
 
-// Each environment has its own database: production data, or preproduction test records restored by the CI/CD.
-const db = new DatabaseSync(process.env.DATABASE_FILE ?? 'data.db', { readOnly: true });
+if (!process.env.DATABASE_URL) throw new Error('Falta DATABASE_URL');
 
-export function findOrder(id) {
-  const row = db.prepare('select id, cliente, items from orders where id = ?').get(id);
-  return row && { id: row.id, cliente: row.cliente, items: JSON.parse(row.items) };
+export const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 10 });
+
+/** Runs fn inside a transaction and always releases the connection. */
+export async function transaction(fn) {
+  const client = await pool.connect();
+  try {
+    await client.query('begin');
+    const result = await fn(client);
+    await client.query('commit');
+    return result;
+  } catch (error) {
+    await client.query('rollback');
+    throw error;
+  } finally {
+    client.release();
+  }
 }

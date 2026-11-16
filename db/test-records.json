@@ -1,15 +1,34 @@
-[
-  {
-    "id": "PRUEBA-1",
-    "cliente": "cliente-prueba",
-    "items": [
-      { "name": "Café", "price": 10, "qty": 1 },
-      { "name": "Té", "price": 10, "qty": 1 }
-    ]
-  },
-  {
-    "id": "PRUEBA-2",
-    "cliente": "cliente-prueba",
-    "items": [{ "name": "Café", "price": 10, "qty": 3 }]
-  }
-]
+{
+  "clientes": [
+    { "id": "cliente-prueba", "nombre": "Cliente de prueba", "email": "prueba@distribuidora.test" },
+    { "id": "cliente-prueba-2", "nombre": "Otro cliente de prueba", "email": "prueba2@distribuidora.test" }
+  ],
+  "productos": [
+    { "sku": "PRUEBA-A", "nombre": "Producto de prueba A", "categoria": "Pruebas", "unidad": "unidad", "precio": 10, "stock": 1000 },
+    { "sku": "PRUEBA-B", "nombre": "Producto de prueba B", "categoria": "Pruebas", "unidad": "unidad", "precio": 10, "stock": 1000 },
+    { "sku": "PRUEBA-CAFE", "nombre": "Café de prueba 500 g", "categoria": "Pruebas", "unidad": "paquete", "precio": 10, "stock": 1000 }
+  ],
+  "pedidos": [
+    {
+      "id": "PRUEBA-1",
+      "cliente": "cliente-prueba",
+      "direccion": "Av. de prueba 1, Caracas",
+      "items": [
+        { "sku": "PRUEBA-A", "cantidad": 1 },
+        { "sku": "PRUEBA-B", "cantidad": 1 }
+      ]
+    },
+    {
+      "id": "PRUEBA-2",
+      "cliente": "cliente-prueba",
+      "direccion": "Av. de prueba 1, Caracas",
+      "items": [{ "sku": "PRUEBA-CAFE", "cantidad": 3 }]
+    },
+    {
+      "id": "PRUEBA-3",
+      "cliente": "cliente-prueba-2",
+      "direccion": "Calle de prueba 2, Valencia",
+      "items": [{ "sku": "PRUEBA-A", "cantidad": 2 }]
+    }
+  ]
+}

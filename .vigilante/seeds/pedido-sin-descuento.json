@@ -1,8 +1,0 @@
-{
-  "id": "PRUEBA-1",
-  "cliente": "cliente-prueba",
-  "items": [
-    { "price": 10, "qty": 1 },
-    { "price": 10, "qty": 1 }
-  ]
-}

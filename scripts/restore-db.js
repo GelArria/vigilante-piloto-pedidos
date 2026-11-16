@@ -1,24 +1,32 @@
-// Restores the preproduction database to a known state: the fixed test records plus the case records in .vigilante/seeds/.
-// Usage: node scripts/restore-db.js <database file>
-import { DatabaseSync } from 'node:sqlite';
-import { readFileSync, readdirSync, existsSync, rmSync } from 'node:fs';
+// Puts the preproduction database in a known state: the fixed test records plus the records of each case in .vigilante/seeds/.
+// The CI/CD runs it before every preproduction start. It erases all data, so it refuses to run anywhere else.
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { pool, transaction } from '../src/db.js';
+import { migrate } from './migrate.js';
+import { cargarDatos } from './datos.js';
 
-const file = process.argv[2];
-if (!file) throw new Error('falta la ruta de la base de datos');
-rmSync(file, { force: true });
-const db = new DatabaseSync(file);
-db.exec('create table orders (id text primary key, cliente text not null, items text not null)');
-const insert = db.prepare('insert or replace into orders (id, cliente, items) values (?, ?, ?)');
+if (process.env.APP_ENV !== 'preproduction') {
+  console.error('restore-db solo se ejecuta con APP_ENV=preproduction: borra todos los datos.');
+  process.exit(1);
+}
 
-const records = JSON.parse(readFileSync('db/test-records.json', 'utf8'));
+const datos = JSON.parse(readFileSync('db/test-records.json', 'utf8'));
+// Credentials of the test customer come from the environment, never from the repository.
+for (const c of datos.clientes) {
+  if (c.id === 'cliente-prueba') Object.assign(c, { clave: process.env.CLAVE_CLIENTE_PRUEBA, token: process.env.TOKEN_CLIENTE_PRUEBA });
+}
 if (existsSync('.vigilante/seeds')) {
-  for (const name of readdirSync('.vigilante/seeds').filter(n => n.endsWith('.json'))) {
+  for (const name of readdirSync('.vigilante/seeds').filter(n => n.endsWith('.json')).sort()) {
     const seed = JSON.parse(readFileSync(`.vigilante/seeds/${name}`, 'utf8'));
-    for (const record of Array.isArray(seed) ? seed : [seed]) {
-      if (typeof record?.id === 'string' && typeof record?.cliente === 'string' && Array.isArray(record?.items)) records.push(record);
-      else console.warn(`registro ignorado en ${name}: necesita id, cliente e items`);
-    }
+    for (const key of ['clientes', 'productos', 'pedidos']) datos[key].push(...(seed[key] ?? []));
+    console.log(`registros del caso cargados: ${name}`);
   }
 }
-for (const r of records) insert.run(r.id, r.cliente, JSON.stringify(r.items));
-console.log(`base restaurada: ${records.length} registros en ${file}`);
+
+await migrate();
+await transaction(async db => {
+  await db.query('truncate pedido_items, pedidos, sesiones, productos, clientes restart identity');
+  await cargarDatos(db, datos);
+});
+console.log(`base de preproducción restaurada: ${datos.clientes.length} clientes, ${datos.productos.length} productos, ${datos.pedidos.length} pedidos`);
+await pool.end();
