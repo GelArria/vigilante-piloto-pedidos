@@ -1,5 +1,5 @@
 import http from 'node:http';
-import { findOrder } from './src/pedidos/orders.js';
+import { findOrder } from './src/db.js';
 import { total } from './src/pedidos/total.js';
 
 // GET /pedidos/:id -> { id, cliente, total }. Customers only see their own orders.
