@@ -1,0 +1,17 @@
+{
+  "name": "vigilante",
+  "version": "0.1.0",
+  "description": "Módulo vigilante: observa los recorridos del contrato de verificación y reporta anomalías al VPS.",
+  "type": "module",
+  "exports": {
+    ".": "./index.mjs",
+    "./match": "./match.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "match.mjs"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
+}
