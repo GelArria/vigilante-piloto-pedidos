@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "project": "pedidos",
+  "intervalMinutes": 5,
+  "productionSynthetic": false,
+  "editable": [
+    "src/pedidos/**"
+  ],
+  "minimalData": [
+    "id",
+    "cliente",
+    "total"
+  ],
+  "flows": [
+    {
+      "id": "consultar-pedido",
+      "useCase": "Consultar un pedido propio en preproducción. El total en USD es la suma de precio por cantidad, sin descuentos por volumen.",
+      "steps": [
+        {
+          "method": "GET",
+          "route": "/pedidos/{id}",
+          "status": 200,
+          "maxMs": 2000,
+          "repeatable": true,
+          "synthetic": {
+            "path": "/pedidos/PRUEBA-1",
+            "headers": {
+              "x-cliente": "cliente-prueba"
+            },
+            "expect": {
+              "id": "PRUEBA-1",
+              "cliente": "cliente-prueba",
+              "total": 20
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "gaps": [
+    "El aislamiento es obligatorio: GET /pedidos/PRUEBA-1 con un x-cliente distinto de cliente-prueba debe responder 404 y nunca mostrar el pedido. Falta confirmar el límite de tiempo para esta respuesta y su cuerpo para completar el paso de verificación.",
+    "Confirmar el x-cliente propietario de PRUEBA-2 para automatizar su consulta: está confirmado que sus 3 cafés de 10 USD deben totalizar 30 USD, con estado 200 y respuesta con id, cliente y total en menos de 2 segundos.",
+    "No se confirmó la respuesta esperada para un pedido inexistente ni para una consulta sin x-cliente.",
+    "No se definieron verificaciones en producción sin registros de prueba fijos; las consultas sintéticas propuestas son solo para preproducción."
+  ]
+}
